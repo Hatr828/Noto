@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "noto",
   "version": "0.1.0",
   "description": "",
   "type": "module",
@@ -18,7 +18,8 @@
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-opener": "^2",
     "material-icons": "^1.13.14",
-    "split.js": "^1.6.5"
+    "split.js": "^1.6.5",
+    "svelte-virtuallists": "^1.4.2"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.6",

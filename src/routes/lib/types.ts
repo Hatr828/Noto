@@ -3,5 +3,5 @@ export interface FileNode {
     title: string;
     hasChildren: boolean;
     childrenArray?: FileNode[];
-  }
+}
   

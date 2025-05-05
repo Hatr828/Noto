@@ -3,6 +3,19 @@
 version = 4
 
 [[package]]
+name = "Noto"
+version = "0.1.0"
+dependencies = [
+ "dirs 4.0.0",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "walkdir",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2064,19 +2077,6 @@ dependencies = [
  "serde",
  "thiserror 2.0.12",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "my-app"
-version = "0.1.0"
-dependencies = [
- "dirs 4.0.0",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "walkdir",
 ]
 
 [[package]]

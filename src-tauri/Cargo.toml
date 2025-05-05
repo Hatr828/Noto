@@ -1,5 +1,5 @@
 [package]
-name = "my-app"
+name = "Noto"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
