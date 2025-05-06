@@ -24,18 +24,6 @@
     { id: '3', name: 'Файл.txt', type: 'file' }
   ];
 
-  const lazyData: Record<string, FileNode[]> = {
-    '1': [
-      { id: '1.1', name: 'Подпапка 1.1', type: 'folder' },
-      { id: '1.2', name: 'Файл1.2.txt', type: 'file' }
-    ],
-    '1.1': [{ id: '1.1.1', name: 'Файл1.1.1.txt', type: 'file' }],
-    '2': [
-      { id: '2.1', name: 'Файл2.1.txt', type: 'file' },
-      { id: '2.2', name: 'Подпапка 2.2', type: 'folder' }
-    ]
-  };
-
   function flatten(nodes: FileNode[], depth = 0): { node: FileNode; depth: number }[] {
     return nodes.flatMap(node => {
       const entry = { node, depth };
@@ -48,19 +36,9 @@
 
   $: flatNodes = flatten(tree);
 
-  async function loadChildren(node: FileNode) {
-    node.children = lazyData[node.id] ?? [];
-    tree = [...tree];
-  }
-
   async function toggle(node: FileNode) {
     if (node.type !== 'folder') return;
-    if (!node.children || node.children.length === 0) {
-      await loadChildren(node);
-      node.expanded = true;
-    } else {
-      node.expanded = !node.expanded;
-    }
+    node.expanded = !node.expanded;
     tree = [...tree];
   }
 
@@ -87,6 +65,32 @@
       tree = recurse(tree);
     }
   }
+
+  // Resaizer 
+  let explorerEl: HTMLDivElement;
+  let resizer: HTMLDivElement;
+  let startX: number;
+  let startWidth: number;
+  let dragging = false;
+  function onPointerDown(e: PointerEvent) {
+    dragging = true;
+    startX = e.clientX;
+    startWidth = explorerEl.getBoundingClientRect().width;
+    resizer.setPointerCapture(e.pointerId);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  }
+  function onPointerMove(e: PointerEvent) {
+    if (!dragging) return;
+    explorerEl.style.width = `${startWidth + e.clientX - startX}px`;
+  }
+  function onPointerUp(e: PointerEvent) {
+    dragging = false;
+    resizer.releasePointerCapture(e.pointerId);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+  }
+  //
 </script>
 
 <div class="file-explorer" bind:this={explorerEl}>
@@ -99,8 +103,9 @@
     </button>
   </div>
 
-  <div class="tree">
+  <div class="tree" on:click={() => (selectedId = null)}>
     <VirtualList
+      class="scroll-container"
       items={flatNodes}
       style="height:100%; width:100%;"
       rowHeight={24}
@@ -109,7 +114,12 @@
         <div
           class="node"
           style="padding-left: {item.depth * 16}px"
-          on:click={() => { toggle(item.node); selectedId = item.node.id; }}
+          on:click|stopPropagation={() => {
+            toggle(item.node);
+            if (item.node.type === 'folder') {
+              selectedId = item.node.id;
+            }
+          }}
         >
           {#if item.node.type === 'folder'}
             <span class="material-icons-outlined icon">
@@ -164,7 +174,17 @@
   }
   .tree {
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
+  }
+  :global(.scroll-container) {
+    overflow-y: scroll;              
+    scrollbar-width: none; 
+    -ms-overflow-style: none 
+  }
+  :global(.scroll-container::-webkit-scrollbar) {
+    width: 0;
+    height: 0;
+    background: transparent 
   }
   .node {
     display: flex;
@@ -202,3 +222,4 @@
     background: var(--color-resizer);
   }
 </style>
+
