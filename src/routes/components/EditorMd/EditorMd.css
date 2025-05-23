@@ -1,0 +1,55 @@
+.editor-container {
+  height: 100%;
+  flex: 1;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--color-resizer);
+  border-radius: 4px;
+  overflow: hidden;
+  border-right: none;
+}
+
+.editor-container .cm-content {
+  padding: var(--spacing-sm);
+}
+
+.editor-container .cm-gutters {
+  background: var(--color-sidebar-bg);
+  color: var(--color-text);
+  border-right: 1px solid var(--color-resizer);
+}
+
+.editor-container .cm-activeLine {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.editor-container .cm-cursor {
+  border-left: 1px solid var(--color-primary) !important;
+}
+
+.editor-container .cm-selectionBackground, 
+.editor-container .cm-selectionMatch {
+  background: rgba(100, 108, 255, 0.3);
+}
+
+.editor-container .cm-foldPlaceholder {
+  background: var(--color-explorer-bg);
+  color: var(--color-primary);
+  border: 1px dashed var(--color-primary);
+  border-radius: 2px;
+}
+
+.editor-container .cm-line:hover {
+    background: transparent;
+}
+
+.editor-container .cm-scroller,
+.editor-container .cm-content {
+  background: var(--color-bg) !important;
+}
+
+.editor-container .cm-layer {
+  background: var(--color-bg) !important;
+}

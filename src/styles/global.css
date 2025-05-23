@@ -1,22 +1,22 @@
 :root {
-    /* Цвета */
-    --color-text: #eee;
-    --color-bg: #242424;
-    --color-primary: #646cff;
-    --color-sidebar-bg: #2e2e2e;
-    --color-explorer-bg: #1e1e1e;
-    --color-hover: #e20404;
-    --color-resizer: #444;
-  
-    /* Отступы */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-  
-    /* Шрифты */
-    --font-family-base: system-ui, sans-serif;
-    --font-size-base: 16px;
+  /* Цвета */
+  --color-text: #eee;
+  --color-bg: #242424;
+  --color-primary: #646cff;
+  --color-sidebar-bg: #2e2e2e;
+  --color-explorer-bg: #1e1e1e;
+  --color-hover: #e20404;
+  --color-resizer: #444;
+
+  /* Отступы */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+
+  /* Шрифты */
+  --font-family-base: system-ui, sans-serif;
+  --font-size-base: 16px;
 }
 
   

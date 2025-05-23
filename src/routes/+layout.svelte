@@ -4,13 +4,14 @@
     import SidebarIcons from './components/SidebarIcons.svelte';
     import '@material-design-icons/font';
     import "@fontsource/material-symbols-outlined";
+    import EditorMd from './components/EditorMd/EditorMd.svelte';
 </script>
   
 <main class="layout">
 
     <SidebarIcons />
     <FileExplorer/>
-
+    <EditorMd />
   <div class="content">
       <slot />
     </div>
@@ -22,14 +23,6 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-  }
-  .content {
-    flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
-    background: var(--color-bg);
   }
 </style>
   
