@@ -7,21 +7,22 @@
     import EditorMd from './components/EditorMd/EditorMd.svelte';
     import MenuBar from './components/MenuBar/MenuBar.svelte';
 </script>
-  
+
 <main class="layout">
-    <div class="upper-panel">
-      <MenuBar />
-    </div>
-    <div class="main-body">
-      <SidebarIcons />
-      <FileExplorer/>
-      <EditorMd />
-    </div>
+  <header  class="titlebar">
+    <MenuBar />
+  </header >
+
+  <div class="main-body">
+    <SidebarIcons />
+    <FileExplorer/>
+    <EditorMd />
+  </div>
   <div class="content">
-      <slot />
-    </div>
+    <slot />
+  </div>
 </main>
-  
+
 <style>
   .layout {
     display: flex;
@@ -32,8 +33,21 @@
   }
   .main-body {
     display: flex;
-    flex: 1;
-    overflow: hidden;
+    height: 100vh;
   }
+  .titlebar {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--spacing-lg);
+  background: var(--color-explorer-bg);
+  border-bottom: 1px solid var(--color-resizer);
+}
+.titlebar .menu-item,
+.titlebar .dropdown-item,
+.titlebar button {
+  -webkit-app-region: no-drag;
+}
 </style>
   

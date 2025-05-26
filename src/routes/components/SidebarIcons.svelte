@@ -24,6 +24,7 @@
         width: 48px;
         height: 100%; 
         color: var(--color-text);
+        border-right: 2px solid var(--color-border);
     }
     .item {
       font-size: 1.5rem;
