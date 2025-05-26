@@ -1,17 +1,22 @@
 <script lang="ts">
-  import './MenuBar.css';
-  import { onMount } from 'svelte'
-  import { getCurrentWindow } from '@tauri-apps/api/window';
+  import "./MenuBar.css";
+  import { onMount, createEventDispatcher } from "svelte";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
 
- let appWindow: any;
+  let appWindow: any;
 
   onMount(() => {
     appWindow = getCurrentWindow();
   });
 
-  const onOpenFolder = () => console.log('openFolder');
-  const onOpenFile   = () => console.log('openFile');
-  const onUndo       = () => console.log('undo');
+  const dispatch = createEventDispatcher();
+
+  function onOpenFolder() {
+    dispatch("openFolder");
+  }
+
+  const onOpenFile = () => console.log("openFile");
+  const onUndo = () => console.log("undo");
 </script>
 
 <nav class="menu-bar">
@@ -33,18 +38,12 @@
 
   <!--basic windows commands-->
   <button class="win-btn" on:click={() => appWindow.minimize()}>
-    <span class="material-icons-outlined">
-        remove
-    </span>
+    <span class="material-icons-outlined"> remove </span>
   </button>
   <button class="win-btn" on:click={() => appWindow.toggleMaximize()}>
-    <span class="material-icons-outlined">
-        close_fullscreen
-    </span>
+    <span class="material-icons-outlined"> close_fullscreen </span>
   </button>
   <button class="win-btn" on:click={() => appWindow.close()}>
-    <span class="material-icons-outlined">
-        close
-    </span>
+    <span class="material-icons-outlined"> close </span>
   </button>
 </nav>

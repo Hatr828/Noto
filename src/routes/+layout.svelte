@@ -1,21 +1,30 @@
 <script lang="ts">
-    import '../styles/global.css'
-    import FileExplorer from './components/FileExplorer/FileExplorer.svelte';
-    import SidebarIcons from './components/SidebarIcons.svelte';
-    import '@material-design-icons/font';
-    import "@fontsource/material-symbols-outlined";
-    import EditorMd from './components/EditorMd/EditorMd.svelte';
-    import MenuBar from './components/MenuBar/MenuBar.svelte';
+  import "../styles/global.css";
+  import FileExplorer from "./components/FileExplorer/FileExplorer.svelte";
+  import SidebarIcons from "./components/SidebarIcons.svelte";
+  import "@material-design-icons/font";
+  import "@fontsource/material-symbols-outlined";
+  import EditorMd from "./components/EditorMd/EditorMd.svelte";
+  import MenuBar from "./components/MenuBar/MenuBar.svelte";
+  import type { FileNode } from "$lib/types";
+  import { openFolderAndScan } from "$lib/api";
+
+  let tree: FileNode[] = [];
+
+  async function handleOpenFolder() {
+    const newTree = await openFolderAndScan();
+    tree = newTree;
+  }
 </script>
 
 <main class="layout">
-  <header  class="titlebar">
-    <MenuBar />
-  </header >
+  <header class="titlebar">
+    <MenuBar on:openFolder={handleOpenFolder} />
+  </header>
 
   <div class="main-body">
     <SidebarIcons />
-    <FileExplorer/>
+    <FileExplorer bind:tree />
     <EditorMd />
   </div>
   <div class="content">
@@ -36,18 +45,17 @@
     height: 100vh;
   }
   .titlebar {
-  -webkit-app-region: drag;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: var(--spacing-lg);
-  background: var(--color-explorer-bg);
-  border-bottom: 1px solid var(--color-resizer);
-}
-.titlebar .menu-item,
-.titlebar .dropdown-item,
-.titlebar button {
-  -webkit-app-region: no-drag;
-}
+    -webkit-app-region: drag;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: var(--spacing-lg);
+    background: var(--color-explorer-bg);
+    border-bottom: 1px solid var(--color-resizer);
+  }
+  .titlebar .menu-item,
+  .titlebar .dropdown-item,
+  .titlebar button {
+    -webkit-app-region: no-drag;
+  }
 </style>
-  

@@ -29,7 +29,7 @@
   border-left: 1px solid var(--color-primary) !important;
 }
 
-.editor-container .cm-selectionBackground, 
+.editor-container .cm-selectionBackground,
 .editor-container .cm-selectionMatch {
   background: rgba(100, 108, 255, 0.3);
 }
@@ -42,7 +42,7 @@
 }
 
 .editor-container .cm-line:hover {
-    background: transparent;
+  background: transparent;
 }
 
 .editor-container .cm-scroller,

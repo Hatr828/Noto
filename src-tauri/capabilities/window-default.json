@@ -7,6 +7,8 @@
   "permissions": [
     "core:window:allow-close",
     "core:window:allow-minimize",
-    "core:window:allow-toggle-maximize"
+    "core:window:allow-toggle-maximize",
+    "core:webview:default",
+    "dialog:allow-open" 
   ]
 }
