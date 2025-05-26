@@ -1,34 +1,45 @@
 use std::fs;
 use std::path::Path;
+use rayon::prelude::*;
+use rayon::iter::ParallelBridge;
 use crate::file_node::FileNode;
 
-pub fn scan_children(path: &Path) -> Vec<FileNode> {
-    let mut nodes = Vec::new();
-    for entry in fs::read_dir(path).unwrap() {
-        let entry = entry.unwrap();
-        let p = entry.path();
+#[tauri::command]
+pub fn open_folder(path: String) -> Vec<FileNode> {
+  let p = Path::new(&path);
+  scan_children(p) 
+}
 
-        if p.is_dir() {
-            let name = p.file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("")
-                .to_string();
-            let mut folder = FileNode::new_folder(name);
-            if let Some(children) = folder.children.as_mut() {
-                *children = scan_children(&p);
-            }
-            nodes.push(folder);
-        } else if p.is_file() {
-            if let Some(ext) = p.extension().and_then(|e| e.to_str()) {
-                if ext.eq_ignore_ascii_case("md") {
-                    let file_name = p.file_name()
-                        .and_then(|n| n.to_str())
-                        .unwrap_or("")
-                        .to_string();
-                    nodes.push(FileNode::new_file(file_name));
+fn scan_children(path: &Path) -> Vec<FileNode> {
+    if let Ok(read_dir) = fs::read_dir(path) {
+        read_dir
+            .par_bridge()
+            .filter_map(|res_entry| {
+                let entry = res_entry.ok()?;
+                let p = entry.path();
+                let name = entry
+                    .file_name()
+                    .to_string_lossy()
+                    .into_owned();
+
+                if p.is_dir() {
+                    let mut folder = FileNode::new_folder(name);
+                    if let Some(children) = folder.children.as_mut() {
+                        *children = scan_children(&p);
+                    }
+                    Some(folder)
+                } else if p.extension()
+                    .and_then(|e| e.to_str())
+                    .map_or(false, |ext| ext.eq_ignore_ascii_case("md"))
+                {
+                    // Markdown file
+                    Some(FileNode::new_file(name))
+                } else {
+                    None
                 }
-            }
-        }
+            })
+            .collect()
+    } else {
+        Vec::new()
     }
-    nodes
 }

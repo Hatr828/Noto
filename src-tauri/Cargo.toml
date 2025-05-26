@@ -18,8 +18,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-dirs = "4.0"
+dirs = "6.0"
 walkdir = "2.3"
+rayon = { version = "1.10", features = ["web_spin_lock"] }
 tauri-plugin-dialog = "2.0.0"
 uuid = { version = "1.2", features = ["v4"] }
 tauri = { version = "2", features = [] }
