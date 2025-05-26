@@ -2,80 +2,38 @@
   import "./FileExplorer.css";
   import { VirtualList } from "svelte-virtuallists";
   import type { FileNode } from "$lib/types";
+    import {
+    flatten,
+    toggle,
+    addNode as addTreeNode,
+    expandAll as expandTree,
+    collapseAll as collapseTree
+  } from './FileExplorer';
 
-  export let tree: FileNode[];
-
-  function flatten(
-    nodes: FileNode[],
-    depth = 0,
-  ): { node: FileNode; depth: number }[] {
-    return nodes.flatMap((node) => {
-      const entry = { node, depth };
-      if (node.type === "folder" && node.expanded && node.children) {
-        return [entry, ...flatten(node.children, depth + 1)];
-      }
-      return [entry];
-    });
-  }
+  export let tree: FileNode[] = [];
 
   $: flatNodes = flatten(tree);
 
-  async function toggle(node: FileNode) {
-    if (node.type !== "folder") return;
-    node.expanded = !node.expanded;
-    tree = [...tree];
-  }
-
   let selectedId: string | null = null;
 
-  function addNode(parentId: string | null, isFolder: boolean) {
-    const newNode: FileNode = {
-      id: Date.now().toString(),
-      name: isFolder ? "New Folder" : "New File.md",
-      type: isFolder ? "folder" : "file",
-      children: isFolder ? [] : undefined,
-    };
-    if (!parentId) {
-      tree = [...tree, newNode];
-    } else {
-      function recurse(nodes: FileNode[]): FileNode[] {
-        return nodes.map((n) => {
-          if (n.id === parentId && n.type === "folder") {
-            return {
-              ...n,
-              children: [...(n.children ?? []), newNode],
-              expanded: true,
-            };
-          }
-          return n.children ? { ...n, children: recurse(n.children) } : n;
-        });
-      }
-      tree = recurse(tree);
-    }
+  function handleToggle(node: FileNode) {
+    tree = toggle(tree, node.id);
+    if (node.type === 'folder') selectedId = node.id;
   }
 
-  function expandAll() {
-    function recurse(nodes: FileNode[]): FileNode[] {
-      return nodes.map((n) => ({
-        ...n,
-        expanded: n.type === "folder",
-        children: n.children ? recurse(n.children) : n.children,
-      }));
-    }
-    tree = recurse(tree);
+  function handleAdd(isFolder: boolean) {
+    tree = addTreeNode(tree, selectedId, isFolder);
   }
 
-  function collapseAll() {
-    function recurse(nodes: FileNode[]): FileNode[] {
-      return nodes.map((n) => ({
-        ...n,
-        expanded: false,
-        children: n.children ? recurse(n.children) : n.children,
-      }));
-    }
-    tree = recurse(tree);
+  function handleExpandAll() {
+    tree = expandTree(tree);
   }
 
+  function handleCollapseAll() {
+    tree = collapseTree(tree);
+  }
+
+ 
   // Resaizer
   let explorerEl: HTMLDivElement;
   let resizer: HTMLDivElement;
@@ -105,16 +63,16 @@
 
 <div class="file-explorer" bind:this={explorerEl}>
   <div class="toolbar">
-    <button on:click={() => addNode(selectedId, true)} class="icon-btn">
+    <button on:click={() => handleAdd(true)} class="icon-btn">
       <span class="material-icons-outlined">create_new_folder</span>
     </button>
-    <button on:click={() => addNode(selectedId, false)} class="icon-btn">
+    <button on:click={() => handleAdd(false)} class="icon-btn">
       <span class="material-icons-outlined">note_add</span>
     </button>
-    <button on:click={collapseAll} class="icon-btn" title="Close all">
+    <button on:click={handleCollapseAll} class="icon-btn" title="Collapse all">
       <span class="material-icons-outlined">unfold_less</span>
     </button>
-    <button on:click={expandAll} class="icon-btn" title="Expand all">
+    <button on:click={handleExpandAll} class="icon-btn" title="Expand all">
       <span class="material-icons-outlined">unfold_more</span>
     </button>
   </div>
@@ -127,14 +85,11 @@
         <div
           class="node"
           style="padding-left: {item.depth * 16}px"
-          on:click|stopPropagation={() => {
-            toggle(item.node);
-            if (item.node.type === "folder") selectedId = item.node.id;
-          }}
+          on:click|stopPropagation={() => handleToggle(item.node)}
         >
-          {#if item.node.type === "folder"}
+          {#if item.node.type === 'folder'}
             <span class="material-icons-outlined icon">
-              {item.node.expanded ? "expand_more" : "chevron_right"}
+              {item.node.expanded ? 'expand_more' : 'chevron_right'}
             </span>
           {:else}
             <span class="icon"></span>

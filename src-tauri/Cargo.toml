@@ -23,6 +23,8 @@ walkdir = "2.3"
 rayon = { version = "1.10", features = ["web_spin_lock"] }
 tauri-plugin-dialog = "2.0.0"
 uuid = { version = "1.2", features = ["v4"] }
+ignore = "0.4.23"
+crossbeam-channel = "0.5"
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }

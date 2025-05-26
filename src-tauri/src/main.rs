@@ -11,7 +11,12 @@ fn main() {
   Builder::default()
   .plugin(tauri_plugin_dialog::init())
     .invoke_handler(generate_handler![
-      commands::open_folder
+      // Menu Bar
+      commands::open_folder,
+      commands::add_folder,
+      commands::add_md_file,
+      commands::delete_node
+      //end
     ])
     .run(generate_context!())
     .expect("error while running tauri application");
