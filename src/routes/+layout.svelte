@@ -5,13 +5,18 @@
     import '@material-design-icons/font';
     import "@fontsource/material-symbols-outlined";
     import EditorMd from './components/EditorMd/EditorMd.svelte';
+    import MenuBar from './components/MenuBar/MenuBar.svelte';
 </script>
   
 <main class="layout">
-
-    <SidebarIcons />
-    <FileExplorer/>
-    <EditorMd />
+    <div class="upper-panel">
+      <MenuBar />
+    </div>
+    <div class="main-body">
+      <SidebarIcons />
+      <FileExplorer/>
+      <EditorMd />
+    </div>
   <div class="content">
       <slot />
     </div>
@@ -20,8 +25,14 @@
 <style>
   .layout {
     display: flex;
+    flex-direction: column;
     width: 100vw;
     height: 100vh;
+    overflow: hidden;
+  }
+  .main-body {
+    display: flex;
+    flex: 1;
     overflow: hidden;
   }
 </style>
