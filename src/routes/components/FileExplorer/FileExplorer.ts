@@ -1,80 +1,128 @@
 import type { FileNode } from '$lib/types';
-
+import { invoke } from "@tauri-apps/api/core";
 
 export interface NodeWithDepth {
   node: FileNode;
   depth: number;
 }
 
-export function flatten(
-  nodes: FileNode[]
-): NodeWithDepth[] {
-  const childrenByParent = new Map<string|null, FileNode[]>()
-  for (const n of nodes) {
-    const list = childrenByParent.get(n.parentId) ?? []
-    list.push(n)
-    childrenByParent.set(n.parentId, list)
-  }
-
-  const out: NodeWithDepth[] = []
-  function dfs(parentId: string|null, depth: number) {
-    const children = childrenByParent.get(parentId)
-    if (!children) return
-    for (const n of children) {
-      out.push({ node: n, depth })
-      if (n.type === 'folder' && n.expanded) {
-        dfs(n.id, depth + 1)
+export function flatten(roots: FileNode[]): NodeWithDepth[] {
+  const out: NodeWithDepth[] = [];
+  const dfs = (node: FileNode, depth: number) => {
+    out.push({ node, depth });
+    if (node.type === 'folder' && node.expanded && node.children) {
+      for (const child of node.children) {
+        dfs(child, depth + 1);
       }
     }
-  }
-  dfs(null, 0)
-  return out
-}
-
-export function toggle(nodes: FileNode[], id: string): FileNode[] {
-  return nodes.map(n =>
-    n.id === id && n.type === 'folder'
-      ? { ...n, expanded: !n.expanded }
-      : n
-  );
-}
-
-export function addNode(
-  nodes: FileNode[],
-  parentId: string | null,
-  isFolder: boolean
-): FileNode[] {
-  const newNode: FileNode = {
-    id: Date.now().toString(),
-    parentId,
-    name: isFolder ? 'New Folder' : 'New File.md',
-    type: isFolder ? 'folder' : 'file',
-    expanded: isFolder, 
   };
-  return [...nodes, newNode];
+  for (const root of roots) dfs(root, 0);
+  return out;
 }
 
-export function expandAll(nodes: FileNode[]): FileNode[] {
-  return nodes.map(n =>
-    n.type === 'folder' ? { ...n, expanded: true } : n
-  );
+
+function mapTree(
+  nodes: FileNode[],
+  updater: (node: FileNode) => FileNode
+): FileNode[] {
+  return nodes.map(n => {
+    const updated = updater(n);
+    if (updated.children) {
+      return {
+        ...updated,
+        children: mapTree(updated.children, updater),
+      };
+    }
+    return updated;
+  });
 }
 
-/** Set expanded=false on _all_ folders */
-export function collapseAll(nodes: FileNode[]): FileNode[] {
-  return nodes.map(n =>
-    n.type === 'folder' ? { ...n, expanded: false } : n
-  );
-}
 
-export function deleteNode(nodes: FileNode[], id: string): FileNode[] {
-  const toRemove = new Set<string>();
-  function mark(id: string) {
-    toRemove.add(id);
-    nodes
-      .filter(n => n.parentId === id)
-      .forEach(child => mark(child.id));
+export async function toggleFolder(
+  roots: FileNode[],
+  id: string
+): Promise<FileNode[]> {
+  async function recurse(nodes: FileNode[]): Promise<FileNode[]> {
+    return Promise.all(
+      nodes.map(async (node) => {
+        if (node.id === id && node.type === 'folder') {
+          const expanded = !node.expanded;
+          let children = node.children;
+
+          if (expanded && (!children || children.length === 0)) {
+            try {
+              const loaded = await invoke<FileNode[]>('open_folder', { path: node.path });
+              children = loaded;
+            } catch (e) {
+              console.error('Failed to load folder contents', e);
+            }
+          }
+
+          return { ...node, expanded, children };
+        }
+
+        if (node.children) {
+          const children = await recurse(node.children);
+          return { ...node, children };
+        }
+
+        return node;
+      })
+    );
   }
-  mark(id);
-  return nodes.filter(n => !toRemove.has(n.id));
+
+  return recurse(roots);
+}
+
+export function addNodeAt(
+  roots: FileNode[],
+  parentId: string | null,
+  nodeToAdd: FileNode
+): FileNode[] {
+  if (parentId === null) {
+    return [...roots, nodeToAdd];
+  }
+  return roots.map(n => {
+    if (n.id === parentId && n.type === 'folder') {
+      const children = n.children ? [...n.children, nodeToAdd] : [nodeToAdd];
+      return { ...n, children };
+    }
+    if (n.children) {
+      return { ...n, children: addNodeAt(n.children, parentId, nodeToAdd) };
+    }
+    return n;
+  });
+}
+
+export function collapseAllFolders(roots: FileNode[]): FileNode[] {
+  return mapTree(roots, node => {
+    if (node.type === 'folder') {
+      return { ...node, expanded: false };
+    }
+    return node;
+  });
+}
+
+export function createTreeNode(
+  type: 'folder' | 'file',
+  parentPath: string,
+  name?: string
+): FileNode {
+  const nodeName = name
+    ? name
+    : type === 'folder'
+    ? 'New Folder'
+    : 'New File.md';
+
+  const base = parentPath.replace(/\/+$/, '');
+  const fullPath = base === '' ? nodeName : `${base}/${nodeName}`;
+
+  return {
+    id: crypto.randomUUID(),
+    name: nodeName,
+    type,
+    path: fullPath,
+    expanded: false,
+    children: type === 'folder' ? [] : undefined,
+  };
 }

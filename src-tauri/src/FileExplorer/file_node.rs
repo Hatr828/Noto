@@ -1,33 +1,42 @@
 use serde::Serialize;
 use uuid::Uuid;
+
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FileNode {
     pub id: String,
-    pub parent_id: Option<String>,   
     pub name: String,
+    pub path: String,
+
     #[serde(rename = "type")]
     pub node_type: String,
-    pub expanded: Option<bool>,
+
+    pub expanded: bool,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub children: Option<Vec<FileNode>>,
 }
 
 impl FileNode {
-    pub fn new_folder(name: String, parent_id: Option<String>) -> Self {
+    pub fn new_folder(name: impl Into<String>, path: impl Into<String>) -> Self {
         FileNode {
             id: Uuid::new_v4().to_string(),
-            parent_id,
-            name,
+            name: name.into(),
+            path: path.into(),
             node_type: "folder".to_string(),
-            expanded: Some(false),
+            expanded: false,
+            children: Some(Vec::new()),
         }
     }
-    pub fn new_file(name: String, parent_id: Option<String>) -> Self {
+
+    pub fn new_file(name: impl Into<String>, path: impl Into<String>) -> Self {
         FileNode {
             id: Uuid::new_v4().to_string(),
-            parent_id,
-            name,
+            name: name.into(),
+            path: path.into(),
             node_type: "file".to_string(),
-            expanded: None,
+            expanded: false,
+            children: None,
         }
     }
 }

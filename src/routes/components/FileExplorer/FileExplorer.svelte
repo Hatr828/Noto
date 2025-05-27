@@ -4,29 +4,28 @@
   import type { FileNode } from "$lib/types";
     import {
     flatten,
-    toggle,
-    addNode as addTreeNode,
-    expandAll as expandTree,
-    collapseAll as collapseTree
+    toggleFolder,
+    createTreeNode,
+    addNodeAt as addTreeNode,
+    collapseAllFolders as collapseTree
   } from './FileExplorer';
 
   export let tree: FileNode[] = [];
 
   $: flatNodes = flatten(tree);
 
-  let selectedId: string | null = null;
+  let selectedNode: FileNode | null = null;
 
-  function handleToggle(node: FileNode) {
-    tree = toggle(tree, node.id);
-    if (node.type === 'folder') selectedId = node.id;
+ async function handleToggle(node: FileNode) {
+  tree = await toggleFolder(tree, node.id);
+
+  if (node.type === 'folder') {
+    selectedNode = node;
   }
+}
 
-  function handleAdd(isFolder: boolean) {
-    tree = addTreeNode(tree, selectedId, isFolder);
-  }
-
-  function handleExpandAll() {
-    tree = expandTree(tree);
+  function handleAdd(newNode: FileNode) {
+    tree = addTreeNode(tree, selectedNode?.id ?? null, newNode);
   }
 
   function handleCollapseAll() {
@@ -63,23 +62,20 @@
 
 <div class="file-explorer" bind:this={explorerEl}>
   <div class="toolbar">
-    <button on:click={() => handleAdd(true)} class="icon-btn">
-      <span class="material-icons-outlined">create_new_folder</span>
-    </button>
-    <button on:click={() => handleAdd(false)} class="icon-btn">
-      <span class="material-icons-outlined">note_add</span>
-    </button>
-    <button on:click={handleCollapseAll} class="icon-btn" title="Collapse all">
-      <span class="material-icons-outlined">unfold_less</span>
-    </button>
-    <button on:click={handleExpandAll} class="icon-btn" title="Expand all">
-      <span class="material-icons-outlined">unfold_more</span>
-    </button>
-  </div>
+      <button on:click={() => handleAdd(createTreeNode('folder', selectedNode?.path ?? "null"))} class="icon-btn">
+        <span class="material-icons-outlined">create_new_folder</span>
+      </button>
+      <button on:click={() => handleAdd(createTreeNode('file', selectedNode?.path ?? "null"))} class="icon-btn">
+        <span class="material-icons-outlined">note_add</span>
+      </button>
+      <button on:click={handleCollapseAll} class="icon-btn" title="Collapse all">
+        <span class="material-icons-outlined">unfold_less</span>
+      </button>
+    </div>
 
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="tree" on:click={() => (selectedId = null)}>
+  <div class="tree" on:click={() => (selectedNode = null)}>
     <VirtualList items={flatNodes} style="height:100%; width:100%">
       {#snippet vl_slot({ item })}
         <div
