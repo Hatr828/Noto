@@ -9,6 +9,11 @@
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
     "core:webview:default",
-    "dialog:allow-open" 
+    "dialog:allow-open",
+
+    "scan-folder",         
+    "core:event:allow-listen",
+    "core:event:allow-emit", 
+    "core:event:allow-unlisten"
   ]
 }

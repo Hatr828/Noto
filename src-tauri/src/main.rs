@@ -12,7 +12,7 @@ fn main() {
   .plugin(tauri_plugin_dialog::init())
     .invoke_handler(generate_handler![
       // Menu Bar
-      commands::open_folder,
+      commands::scan_folder,
       commands::add_folder,
       commands::add_md_file,
       commands::delete_node

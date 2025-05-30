@@ -2,6 +2,7 @@
   import "./MenuBar.css";
   import { onMount, createEventDispatcher } from "svelte";
   import { getCurrentWindow } from "@tauri-apps/api/window";
+  import { openFolderAndScan } from "$lib/apis/MenuBar_api"
 
   let appWindow: any;
 
@@ -23,7 +24,7 @@
   <div class="menu-item">
     File
     <div class="dropdown">
-      <div class="dropdown-item" on:click={onOpenFolder}>Open Folder</div>
+      <div class="dropdown-item" on:click={openFolderAndScan}>Open Folder</div>
       <div class="dropdown-item" on:click={onOpenFile}>Open File</div>
     </div>
   </div>

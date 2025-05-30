@@ -1,5 +1,7 @@
 import type { FileNode } from '$lib/types';
+import { startScan } from '$lib/apis/MenuBar_api';
 import { invoke } from "@tauri-apps/api/core";
+import { tree } from "$stores/tree";
 
 export interface NodeWithDepth {
   node: FileNode;
@@ -38,40 +40,17 @@ function mapTree(
 }
 
 
-export async function toggleFolder(
-  roots: FileNode[],
-  id: string
-): Promise<FileNode[]> {
-  async function recurse(nodes: FileNode[]): Promise<FileNode[]> {
-    return Promise.all(
-      nodes.map(async (node) => {
-        if (node.id === id && node.type === 'folder') {
-          const expanded = !node.expanded;
-          let children = node.children;
-
-          if (expanded && (!children || children.length === 0)) {
-            try {
-              const loaded = await invoke<FileNode[]>('open_folder', { path: node.path });
-              children = loaded;
-            } catch (e) {
-              console.error('Failed to load folder contents', e);
-            }
-          }
-
-          return { ...node, expanded, children };
-        }
-
-        if (node.children) {
-          const children = await recurse(node.children);
-          return { ...node, children };
-        }
-
-        return node;
-      })
-    );
+export async function toggleFolder(parent: FileNode): Promise<void> {
+  if (!parent.children) {
+    parent.children = [];
   }
+  if(parent.children.length === 0) {
+    await startScan(parent.path);
+  }
+  
+  parent.expanded = !parent.expanded;
 
-  return recurse(roots);
+  tree.update(nodes => [...nodes]);
 }
 
 export function addNodeAt(
@@ -111,8 +90,8 @@ export function createTreeNode(
   const nodeName = name
     ? name
     : type === 'folder'
-    ? 'New Folder'
-    : 'New File.md';
+      ? 'New Folder'
+      : 'New File.md';
 
   const base = parentPath.replace(/\/+$/, '');
   const fullPath = base === '' ? nodeName : `${base}/${nodeName}`;

@@ -1,22 +1,42 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from '@tauri-apps/plugin-dialog';
 import type { FileNode } from '../types';
+import { listen } from '@tauri-apps/api/event'
+import type { UnlistenFn } from '@tauri-apps/api/event'
+import { tree } from "$stores/tree";
 
 /**
  * Opens an directory scans all files and folders there.
  *
  * @returns TreeNode of directory
  */
-export async function openFolderAndScan(): Promise<FileNode[]> {
-  const selection = await open({ directory: true, multiple: false });
-  if (Array.isArray(selection)) {
-    if (selection.length === 0) return [];
-    return invoke<FileNode[]>('open_folder', { path: selection[0] });
+export async function openFolderAndScan(): Promise<void> {
+  
+  const selection = await open({ directory: true, multiple: false })
+  
+  let path: string | undefined
+  if (Array.isArray(selection) && selection.length > 0) {
+    path = selection[0] as string
+  } else if (typeof selection === 'string') {
+    path = selection
   }
-  if (typeof selection === 'string') {
-    return invoke<FileNode[]>('open_folder', { path: selection });
+  
+  if (!path) {
+    return
   }
-  return [];
+
+  tree.set([])
+  startScan(path)
+}
+
+
+
+export async function startScan(path: string): Promise<void> {
+  try {
+    await invoke('scan_folder', { path })
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 /**

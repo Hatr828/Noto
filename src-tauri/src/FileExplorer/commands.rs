@@ -1,13 +1,9 @@
 use walkdir::WalkDir;
+use tauri::{Window, Emitter};
 use std::{path::{Path, PathBuf}};
 use crate::file_node::FileNode;
 use std::fs;
 use std::io::Write;
-
-#[tauri::command]
-pub fn open_folder(path: String) -> Vec<FileNode> {
-    scan_flat(Path::new(&path))
-}
 
 #[tauri::command]
 pub fn add_folder(base_dir: String, name: String) -> Result<String, String> {
@@ -69,25 +65,38 @@ fn is_markdown(path: &Path) -> bool {
         .map_or(false, |ext| ext.eq_ignore_ascii_case("md"))
 }
 
-pub fn scan_flat(root: &Path) -> Vec<FileNode> {
-    WalkDir::new(root)
-        .min_depth(1)
-        .max_depth(1)
-        .into_iter()
-        .filter_map(Result::ok)
-        .filter(|e| {
-            let ft = e.file_type();
-            // папки или markdown-файлы
-            ft.is_dir() || (ft.is_file() && is_markdown(e.path()))
-        })
-        .map(|e| {
-            let name = e.file_name().to_string_lossy();
-            let path = e.path().to_string_lossy();
-            if e.file_type().is_dir() {
-                FileNode::new_folder(name, path)
-            } else {
-                FileNode::new_file(name, path)
-            }
-        })
-        .collect()
+#[tauri::command]
+pub async fn scan_folder(path: String, window: Window) {
+  if let Err(e) = window.emit("scan-change-path", &path) {
+    eprintln!("Failed to emit `scan-change-path` for {}: {:?}", path, e);
+  }
+
+  for entry in WalkDir::new(&path)
+    .min_depth(1)
+    .max_depth(1)
+    .into_iter()
+    .filter_map(Result::ok)
+  {
+    let name = entry.file_name().to_string_lossy().to_string();
+    let path_str = entry.path().to_string_lossy().to_string();
+
+    let file_node = if entry.file_type().is_dir() {
+      FileNode::new_folder(name, path_str)
+    } else if is_markdown(entry.path()) {
+      FileNode::new_file(name, path_str)
+    } else {
+      continue;
+    };
+
+    if let Err(e) = window.emit("scan-node", &file_node) {
+      eprintln!(
+        "Failed to emit `scan-node` for {:?}: {:?}",
+        file_node.path, e
+      );
+    }
+  }
+
+  if let Err(e) = window.emit("scan-complete", &path) {
+    eprintln!("Failed to emit `scan-complete` for {}: {:?}", path, e);
+  }
 }

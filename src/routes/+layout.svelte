@@ -6,25 +6,16 @@
   import "@fontsource/material-symbols-outlined";
   import EditorMd from "./components/EditorMd/EditorMd.svelte";
   import MenuBar from "./components/MenuBar/MenuBar.svelte";
-  import type { FileNode } from "$lib/types";
-  import { openFolderAndScan } from "$lib/apis/MenuBar_api";
-
-  let tree: FileNode[] = [];
-
-  async function handleOpenFolder() {
-    const newTree = await openFolderAndScan();
-    tree = newTree;
-  }
 </script>
 
 <main class="layout">
   <header class="titlebar">
-    <MenuBar on:openFolder={handleOpenFolder} />
+    <MenuBar />
   </header>
 
   <div class="main-body">
     <SidebarIcons />
-    <FileExplorer bind:tree />
+    <FileExplorer />
     <EditorMd />
   </div>
   <div class="content">

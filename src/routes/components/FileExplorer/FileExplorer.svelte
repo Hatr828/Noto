@@ -9,15 +9,14 @@
     addNodeAt as addTreeNode,
     collapseAllFolders as collapseTree
   } from './FileExplorer';
+  import { tree } from '$stores/tree'
 
-  export let tree: FileNode[] = [];
-
-  $: flatNodes = flatten(tree);
+  $: flatNodes = flatten($tree);
 
   let selectedNode: FileNode | null = null;
 
  async function handleToggle(node: FileNode) {
-  tree = await toggleFolder(tree, node.id);
+  await toggleFolder(node);
 
   if (node.type === 'folder') {
     selectedNode = node;
@@ -25,11 +24,11 @@
 }
 
   function handleAdd(newNode: FileNode) {
-    tree = addTreeNode(tree, selectedNode?.id ?? null, newNode);
+   // tree = addTreeNode(tree, selectedNode?.id ?? null, newNode);
   }
 
   function handleCollapseAll() {
-    tree = collapseTree(tree);
+   // tree = collapseTree(tree);
   }
 
  

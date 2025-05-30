@@ -1,0 +1,9 @@
+# src-tauri/permissions/scan-folder.toml
+"$schema" = "../gen/schemas/schema.json"
+
+[[permission]]
+# это ваш собственный идентификатор permission-сета
+identifier = "scan-folder"
+description = "Разрешить фронту вызывать команду scan_folder"
+# сюда перечисляем точно те #[tauri::command], которые вы хотите открыть
+commands.allow = ["scan_folder"]
