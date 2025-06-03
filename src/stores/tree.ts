@@ -1,62 +1,99 @@
 import { writable, get } from 'svelte/store'
-import type { FileNode } from '$lib/types'
+import type { FileNode, FileTreeState, FileNodeType } from '$lib/FileNodes_types'
 import { listen } from '@tauri-apps/api/event'
+import { tick } from 'svelte'
 
-export const tree = writable<FileNode[]>([])
-export const selectedPath = writable<string | null>(null)
-export const selectedNode = writable<FileNode | undefined>(undefined)
+export const treeData = writable<FileTreeState>({
+  nodes: new Map(),
+  children: new Map(),
+  rootPaths: []
+})
 
-const toRoot = writable<boolean>(false)
+const CHUNK_SIZE = 500;
+export const selectedPath = writable<string | undefined>(undefined)
 
-export function findNodeByPath(nodes: FileNode[], targetPath: string): FileNode | undefined {
-    let currentNodes = nodes
-    while (true) {
-        const current = currentNodes.find(n => targetPath.indexOf(n.path) > -1)
-        if (!current) return undefined
-        if (current.path.length === targetPath.length) return current
-        currentNodes = current.children ?? []
+const isRoot = writable<boolean>(false);
+
+export function updateSelectedPath(path: string) {
+  selectedPath.set(path);
+}
+
+export function findNodeByPath(id: string): FileNode | undefined {
+  return get(treeData).nodes.get(id);
+}
+
+export function addNode(parentPath: string | null, node: FileNode) {
+  treeData.update(state => {
+    state.nodes.set(node.path, { ...node, expanded: false })
+
+    if (!state.children.has(node.path)) {
+      state.children.set(node.path, [])
     }
+
+    if (parentPath === null) {
+      state.rootPaths.push(node.path)
+    } else {
+      state.children.get(parentPath)!.push(node.path)
+    }
+    return state
+  })
+}
+
+export function resetTreeData(): void {
+  treeData.set({
+    nodes: new Map<string, FileNode>(),
+    children: new Map<string, string[]>(),
+    rootPaths: []
+  })
 }
 
 listen<string>('scan-change-path', ({ payload }) => {
-    selectedPath.set(payload)
+  if (get(treeData).rootPaths.length === 0) {
+    isRoot.set(true);
+    return;
+  }
 
-    const nodes = get(tree)
+  if (get(selectedPath) === payload) {
+    return;
+  }
 
-    if (nodes.length === 0) {
-        toRoot.set(true);
-        return;
-    }
-    else {
-        toRoot.set(false);
-    }
-
-
-    const node = findNodeByPath(nodes, payload)
-
-    selectedNode.set(node)
+  updateSelectedPath(payload);
 })
 
-listen<FileNode>('scan-node', ({ payload }) => {
-    if (get(toRoot)) {
-        tree.update(nodes => [...nodes, payload])
-        return
+listen<FileNode[]>('add-nodes', ({ payload }) => {
+  const rootFlag = get(isRoot)
+  const parentPath = get(selectedPath)
+
+  treeData.update(state => {
+    for (const node of payload) {
+      const path = node.path
+
+      state.nodes.set(path, { ...node, expanded: false })
+
+      if (!state.children.has(path)) {
+        state.children.set(path, [])
+      }
+
+      if (rootFlag) {
+        if (!state.rootPaths.includes(path)) {
+          state.rootPaths.push(path)
+        }
+        continue
+      }
+
+      if (!parentPath) continue
+      const arr = state.children.get(parentPath)
+      if (arr) {
+        arr.push(path)
+      } else {
+        state.children.set(parentPath, [path])
+      }
     }
-
-
-
-    const node = get(selectedNode)
-    if (!node) {
-        return;
-    }
-
-    if (!node.children) node.children = []
-
-    node.children.push(payload)
-
-    tree.update(nodes => [...nodes])
+    return state
+  })
 })
 
 listen<string>('scan-complete', ({ payload }) => {
-    console.log('scan complete', payload)
+  isRoot.set(false);
+  console.log('scan complete', payload);
 })

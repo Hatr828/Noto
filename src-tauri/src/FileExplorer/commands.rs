@@ -1,9 +1,10 @@
-use walkdir::WalkDir;
-use tauri::{Window, Emitter};
-use std::{path::{Path, PathBuf}};
-use crate::file_node::FileNode;
+use crate::file_node::{FileNode, FileNodeType};
 use std::fs;
 use std::io::Write;
+use std::path::{Path, PathBuf};
+use tauri::{Emitter, Window};
+use tauri::async_runtime::spawn_blocking;
+use walkdir::WalkDir;
 
 #[tauri::command]
 pub fn add_folder(base_dir: String, name: String) -> Result<String, String> {
@@ -17,11 +18,7 @@ pub fn add_folder(base_dir: String, name: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn add_md_file(
-    base_dir: String,
-    name: String,
-    content: String,
-) -> Result<String, String> {
+pub fn add_md_file(base_dir: String, name: String, content: String) -> Result<String, String> {
     let mut file_name = name;
     if !file_name.to_lowercase().ends_with(".md") {
         file_name.push_str(".md");
@@ -71,28 +68,38 @@ pub async fn scan_folder(path: String, window: Window) {
     eprintln!("Failed to emit `scan-change-path` for {}: {:?}", path, e);
   }
 
-  for entry in WalkDir::new(&path)
-    .min_depth(1)
-    .max_depth(1)
-    .into_iter()
-    .filter_map(Result::ok)
-  {
-    let name = entry.file_name().to_string_lossy().to_string();
-    let path_str = entry.path().to_string_lossy().to_string();
+  let path_clone = path.clone();
+  let entries: Vec<(String, String, FileNodeType)> = spawn_blocking(move || {
+    let mut batch = Vec::new();
+    for entry in WalkDir::new(&path_clone)
+      .min_depth(1)
+      .max_depth(1)
+      .into_iter()
+      .filter_map(Result::ok)
+      .filter(|e| e.file_type().is_dir() || is_markdown(e.path()))
+    {
+      let name = entry.file_name().to_string_lossy().to_string();
+      let path_str = entry.path().to_string_lossy().to_string();
+      let node_type = if entry.file_type().is_dir() {
+        FileNodeType::Folder
+      } else {
+        FileNodeType::Md
+      };
+      batch.push((name, path_str, node_type));
+    }
+    batch
+  })
+  .await
+  .unwrap_or_default(); 
 
-    let file_node = if entry.file_type().is_dir() {
-      FileNode::new_folder(name, path_str)
-    } else if is_markdown(entry.path()) {
-      FileNode::new_file(name, path_str)
-    } else {
-      continue;
-    };
+  if !entries.is_empty() {
+    let nodes: Vec<FileNode> = entries
+      .into_iter()
+      .map(|(name, p, t)| FileNode::new(name, p, t))
+      .collect();
 
-    if let Err(e) = window.emit("scan-node", &file_node) {
-      eprintln!(
-        "Failed to emit `scan-node` for {:?}: {:?}",
-        file_node.path, e
-      );
+    if let Err(e) = window.emit("add-nodes", &nodes) {
+      eprintln!("Failed to emit `add-nodes`: {:?}", e);
     }
   }
 

@@ -1,107 +1,37 @@
-import type { FileNode } from '$lib/types';
-import { startScan } from '$lib/apis/MenuBar_api';
-import { invoke } from "@tauri-apps/api/core";
-import { tree } from "$stores/tree";
+import type { FileNode } from '$lib/FileNodes_types';
+import { startScan } from '$lib/apis/FileExplorer_api';
+import { treeData, selectedPath, findNodeByPath, addNode } from '$stores/tree'
 
-export interface NodeWithDepth {
-  node: FileNode;
-  depth: number;
-}
+export async function toggleFolder(node: FileNode): Promise<void> {
+  const path = node.path
 
-export function flatten(roots: FileNode[]): NodeWithDepth[] {
-  const out: NodeWithDepth[] = [];
-  const dfs = (node: FileNode, depth: number) => {
-    out.push({ node, depth });
-    if (node.type === 'folder' && node.expanded && node.children) {
-      for (const child of node.children) {
-        dfs(child, depth + 1);
-      }
+  treeData.update(state => {
+    if (!state.children.has(path)) {
+      state.children.set(path, [])
     }
-  };
-  for (const root of roots) dfs(root, 0);
-  return out;
-}
+    const childIds = state.children.get(path)!
 
-
-function mapTree(
-  nodes: FileNode[],
-  updater: (node: FileNode) => FileNode
-): FileNode[] {
-  return nodes.map(n => {
-    const updated = updater(n);
-    if (updated.children) {
-      return {
-        ...updated,
-        children: mapTree(updated.children, updater),
-      };
+    if (childIds.length === 0) {
+      startScan(path)
     }
-    return updated;
-  });
-}
 
-
-export async function toggleFolder(parent: FileNode): Promise<void> {
-  if (!parent.children) {
-    parent.children = [];
-  }
-  if(parent.children.length === 0) {
-    await startScan(parent.path);
-  }
-  
-  parent.expanded = !parent.expanded;
-
-  tree.update(nodes => [...nodes]);
-}
-
-export function addNodeAt(
-  roots: FileNode[],
-  parentId: string | null,
-  nodeToAdd: FileNode
-): FileNode[] {
-  if (parentId === null) {
-    return [...roots, nodeToAdd];
-  }
-  return roots.map(n => {
-    if (n.id === parentId && n.type === 'folder') {
-      const children = n.children ? [...n.children, nodeToAdd] : [nodeToAdd];
-      return { ...n, children };
+    const stored = findNodeByPath(path)
+    if (stored) {
+      stored.expanded = !stored.expanded
     }
-    if (n.children) {
-      return { ...n, children: addNodeAt(n.children, parentId, nodeToAdd) };
-    }
-    return n;
-  });
+    return state
+  })
 }
 
-export function collapseAllFolders(roots: FileNode[]): FileNode[] {
-  return mapTree(roots, node => {
-    if (node.type === 'folder') {
-      return { ...node, expanded: false };
-    }
-    return node;
-  });
+export function addNodeAt(parentPath: string | null, nodeToAdd: FileNode): void {
+  addNode(parentPath, nodeToAdd)
 }
 
-export function createTreeNode(
-  type: 'folder' | 'file',
-  parentPath: string,
-  name?: string
-): FileNode {
-  const nodeName = name
-    ? name
-    : type === 'folder'
-      ? 'New Folder'
-      : 'New File.md';
-
-  const base = parentPath.replace(/\/+$/, '');
-  const fullPath = base === '' ? nodeName : `${base}/${nodeName}`;
-
-  return {
-    id: crypto.randomUUID(),
-    name: nodeName,
-    type,
-    path: fullPath,
-    expanded: false,
-    children: type === 'folder' ? [] : undefined,
-  };
+export function collapseAllFolders(): void {
+  treeData.update(state => {
+    for (const [, node] of state.nodes) {
+      node.expanded = false
+    }
+    return state
+  })
 }

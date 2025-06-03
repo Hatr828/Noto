@@ -2,7 +2,7 @@
   import "./MenuBar.css";
   import { onMount, createEventDispatcher } from "svelte";
   import { getCurrentWindow } from "@tauri-apps/api/window";
-  import { openFolderAndScan } from "$lib/apis/MenuBar_api"
+  import { openFolderAndScan } from "$lib/apis/FileExplorer_api"
 
   let appWindow: any;
 

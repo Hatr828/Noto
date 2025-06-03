@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from '@tauri-apps/plugin-dialog';
-import type { FileNode } from '../types';
+import type { FileNode } from '../FileNodes_types';
 import { listen } from '@tauri-apps/api/event'
 import type { UnlistenFn } from '@tauri-apps/api/event'
-import { tree } from "$stores/tree";
+import { treeData, resetTreeData } from "$stores/tree";
 
 /**
  * Opens an directory scans all files and folders there.
@@ -25,7 +25,7 @@ export async function openFolderAndScan(): Promise<void> {
     return
   }
 
-  tree.set([])
+  resetTreeData();
   startScan(path)
 }
 
