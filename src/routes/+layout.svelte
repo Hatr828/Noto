@@ -6,6 +6,7 @@
   import "@fontsource/material-symbols-outlined";
   import EditorMd from "./components/EditorMd/EditorMd.svelte";
   import MenuBar from "./components/MenuBar/MenuBar.svelte";
+    import ModalInfo from "../lib/Modals/Modal_Info/Modal_Info.svelte";
 </script>
 
 <main class="layout">
@@ -14,6 +15,7 @@
   </header>
 
   <div class="main-body">
+    <ModalInfo />
     <SidebarIcons />
     <FileExplorer />
     <EditorMd />

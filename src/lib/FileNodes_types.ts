@@ -51,3 +51,12 @@ export function flatten(treeState: FileTreeState): FlattenedItem[] {
   }
   return out
 }
+
+export function getFileNodeAsString(node: FileNode): Array<[string, string]> {
+  return [
+    ["name: ", node.name],
+    ["path: ", node.path],
+    ["type: ", node.type.toString()],
+    ["expanded: ", node.expanded.toString()]
+  ]
+}

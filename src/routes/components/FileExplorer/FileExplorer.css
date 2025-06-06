@@ -104,19 +104,44 @@
 }
 
 .tree {
-  position: relative;  
-  overflow: auto;      
-  
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+    position: relative;
+    overflow: auto;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .tree::-webkit-scrollbar,
 .tree *::-webkit-scrollbar {
-  background: transparent;
+    background: transparent;
 }
 
 .tree::-webkit-scrollbar-track,
 .tree *::-webkit-scrollbar-track {
-  background: transparent;
+    background: transparent;
+}
+
+.context-menu {
+    position: fixed;
+    z-index: 2000;
+    background-color: var(--color-sidebar-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 120px;
+    overflow: hidden;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+}
+
+.context-item {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.context-item:hover {
+    background-color: var(--color-hover);
+    color: var(--color-bg);
 }
