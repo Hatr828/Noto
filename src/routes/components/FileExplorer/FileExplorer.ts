@@ -1,6 +1,17 @@
-import type { FileNode } from '$lib/FileNodes_types';
-import { startScan } from '$lib/apis/FileExplorer_api';
-import { treeData, selectedPath, findNodeByPath, addNode } from '$stores/tree'
+import { FileNodeType, type FileNode, createFileNode } from '$lib/FileNodes_types';
+import { startScan, addFolder, addMdFile } from '$lib/apis/FileExplorer_api';
+import {
+  treeData,
+  selectedPath,
+  findNodeByPath,
+  addNode as storeAddNode,
+} from '$stores/tree';
+import { get } from "svelte/store";
+
+function basename(path: string): string {
+  const parts = path.split(/[/\\]+/)
+  return parts[parts.length - 1] || ''
+}
 
 export async function toggleFolder(node: FileNode): Promise<void> {
   const path = node.path
@@ -23,9 +34,41 @@ export async function toggleFolder(node: FileNode): Promise<void> {
   })
 }
 
-export function addNodeAt(parentPath: string | null, nodeToAdd: FileNode): void {
-  addNode(parentPath, nodeToAdd)
+export async function createAndAddNode(
+  parentNode: FileNode | null,
+  nodeType: FileNodeType,
+  name: string
+): Promise<void> {
+  const state = get(treeData)
+  const basePath = parentNode ? parentNode.path : state.rootSource
+
+  if (!basePath) {
+    console.error(
+      'Error basePath is null or undefined in FileExplorer, createAndAddNode'
+    )
+    return
+  }
+
+  try {
+    let createdPath: string
+
+    if (nodeType === FileNodeType.Folder) {
+      createdPath = await addFolder(basePath, name)
+    } else {
+      createdPath = await addMdFile(basePath, name, '\n\n\n')
+    }
+
+    const finalName = basename(createdPath)
+
+    const newPath = createdPath
+
+    const newNode: FileNode = createFileNode(finalName, newPath, nodeType)
+    storeAddNode(parentNode?.path ?? null, newNode)
+  } catch (error) {
+    console.error('Error while creating node:', error)
+  }
 }
+
 
 export function collapseAllFolders(): void {
   treeData.update(state => {

@@ -2,8 +2,6 @@
 "$schema" = "../gen/schemas/schema.json"
 
 [[permission]]
-# это ваш собственный идентификатор permission-сета
 identifier = "scan-folder"
-description = "Разрешить фронту вызывать команду scan_folder"
-# сюда перечисляем точно те #[tauri::command], которые вы хотите открыть
-commands.allow = ["scan_folder"]
+description = "allow commands for FileExplorer"
+commands.allow = ["scan_folder", "add_folder", "add_md_file", "delete_node"]

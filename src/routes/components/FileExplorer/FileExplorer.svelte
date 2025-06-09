@@ -6,10 +6,14 @@
     FileNodeType,
     type FileNode,
     getFileNodeAsString,
+    flatten,
   } from "$lib/FileNodes_types";
   import { onMount } from "svelte";
-  import { flatten, createFileNode } from "$lib/FileNodes_types";
-  import { toggleFolder, collapseAllFolders } from "./FileExplorer";
+  import {
+    toggleFolder,
+    collapseAllFolders,
+    createAndAddNode,
+  } from "./FileExplorer";
   import { treeData } from "$stores/tree";
   import { get } from "svelte/store";
 
@@ -18,15 +22,19 @@
   let selectedNode: FileNode | null = null;
 
   async function handleToggle(node: FileNode) {
-    await toggleFolder(node);
-
     if (node.type === "folder") {
+      await toggleFolder(node);
+
+      if (node.expanded === false) {
+        selectedNode = null;
+      }
+
       selectedNode = node;
     }
   }
 
-  function handleAdd() {
-    // tree = addTreeNode(tree, selectedNode?.id ?? null, newNode);
+  function handleAdd(type: FileNodeType, name: string) {
+    createAndAddNode(selectedNode, type, name);
   }
 
   function handleCollapseAll() {
@@ -99,10 +107,16 @@
 
 <div class="file-explorer" bind:this={explorerEl}>
   <div class="toolbar">
-    <button on:click={() => handleAdd()} class="icon-btn">
+    <button
+      on:click={() => handleAdd(FileNodeType.Folder, "New Folder")}
+      class="icon-btn"
+    >
       <span class="material-icons-outlined">create_new_folder</span>
     </button>
-    <button on:click={() => handleAdd()} class="icon-btn">
+    <button
+      on:click={() => handleAdd(FileNodeType.Md, "New File")}
+      class="icon-btn"
+    >
       <span class="material-icons-outlined">note_add</span>
     </button>
     <button on:click={handleCollapseAll} class="icon-btn" title="Collapse all">
@@ -112,8 +126,18 @@
 
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="tree" on:click={hideContextMenu}>
-    <VirtualList items={flatNodes} style="height:100%; width:100%">
+  <div
+    class="tree"
+    on:click={() => {
+      hideContextMenu();
+      selectedNode = null;
+    }}
+  >
+    <VirtualList
+      items={flatNodes}
+      style="height:100%; width:100%"
+      class="tree-scroll"
+    >
       {#snippet vl_slot({ item })}
         <div
           class="node"
@@ -122,8 +146,9 @@
         >
           {#if item.node.type === "folder"}
             <span
+              on:contextmenu|stopPropagation={(e: MouseEvent) =>
+                handleContextMenu(e, item.node)}
               class="material-icons-outlined icon"
-              title="Состояние папки"
               style="cursor: default;"
             >
               {item.node.expanded ? "expand_more" : "chevron_right"}
@@ -134,7 +159,7 @@
 
           <span
             class="title"
-            on:contextmenu|preventDefault|stopPropagation={(e: MouseEvent) =>
+            on:contextmenu|stopPropagation={(e: MouseEvent) =>
               handleContextMenu(e, item.node)}
             style="cursor: default; user-select: none;"
             title="right click - menu"
@@ -151,9 +176,14 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore element_invalid_self_closing_tag -->
 {#if contextMenuVisible}
+  <div
+    class="menu-overlay"
+    on:click={hideContextMenu}
+    on:contextmenu={hideContextMenu}
+  />
+
   <div
     class="context-menu"
     style="top: {contextMenuY}px; left: {contextMenuX}px;"

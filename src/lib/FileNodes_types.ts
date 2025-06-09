@@ -12,8 +12,9 @@ export enum FileNodeType {
 
 export interface FileTreeState {
   nodes: Map<string, FileNode>      // key = node.path
-  children: Map<string, string[]>   
-  rootPaths: string[]               
+  children: Map<string, string[]>
+  rootPaths: string[],
+  rootSource: string | null;
 }
 
 export interface FlattenedItem {

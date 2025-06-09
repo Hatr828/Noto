@@ -8,19 +8,19 @@ import { treeData, resetTreeData } from "$stores/tree";
 /**
  * Opens an directory scans all files and folders there.
  *
- * @returns TreeNode of directory
+ * @returns void
  */
 export async function openFolderAndScan(): Promise<void> {
-  
+
   const selection = await open({ directory: true, multiple: false })
-  
+
   let path: string | undefined
   if (Array.isArray(selection) && selection.length > 0) {
     path = selection[0] as string
   } else if (typeof selection === 'string') {
     path = selection
   }
-  
+
   if (!path) {
     return
   }
@@ -41,11 +41,11 @@ export async function startScan(path: string): Promise<void> {
 
 /**
  * Creates a new folder inside the specified directory.
- * If a folder with the same name exists, appends `_i` until it's unique.
+ * If a folder with the same name exists, appends `(i)` until it's unique.
  *
  * @param baseDir - Absolute path to the target directory
  * @param name - Desired folder name (without suffix)
- * @returns The actual folder name created (possibly with `_i`)
+ * @returns path to folder
  * @throws Error if creation fails
  */
 export async function addFolder(
@@ -53,7 +53,10 @@ export async function addFolder(
   name: string
 ): Promise<string> {
   try {
-    const createdName = await invoke<string>('add_folder', { baseDir, name });
+    const createdName = await invoke<string>('add_folder', {
+      baseDir,
+      name
+    });
     return createdName;
   } catch (err) {
     throw new Error(`Failed to create folder: ${err}`);
@@ -62,12 +65,12 @@ export async function addFolder(
 
 /**
  * Creates a new Markdown file in the specified directory.
- * Ensures a unique name by appending `_i` before the `.md` extension if needed.
+ * Ensures a unique name by appending `(i)` before the `.md` extension if needed.
  *
  * @param baseDir - Absolute path to the target directory
  * @param name - Desired filename (with or without `.md`)
  * @param content - Initial file contents
- * @returns The actual filename created (with `.md` and possibly `_i`)
+ * @returns path to file
  * @throws Error if creation or write fails
  */
 export async function addMdFile(
@@ -95,7 +98,7 @@ export async function addMdFile(
  * @returns The name of the deleted node
  * @throws Error if deletion fails or node not found
  */
-export async function deleteNode(
+export async function deleteF(
   baseDir: string,
   name: string
 ): Promise<string> {

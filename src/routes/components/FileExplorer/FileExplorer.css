@@ -121,6 +121,16 @@
     background: transparent;
 }
 
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    z-index: 1999;
+}
+
 .context-menu {
     position: fixed;
     z-index: 2000;
@@ -144,4 +154,11 @@
 .context-item:hover {
     background-color: var(--color-hover);
     color: var(--color-bg);
+}
+
+.tree-scroll {
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 70px;
 }

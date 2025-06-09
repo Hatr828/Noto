@@ -1,31 +1,13 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher<{ navigate: string }>();
-
-  const items: { icon: string; route: string; title: string }[] = [
-    { icon: "🏠", route: "/", title: "Home" },
-    { icon: "📄", route: "/notes", title: "Notes" },
-    { icon: "⚙️", route: "/settings", title: "Settings" },
-  ];
-
-  function onClick(route: string) {
-    dispatch("navigate", route);
-  }
 </script>
 
 <div class="sidebar">
-  {#each items as { icon, route, title }}
-    <div
-      class="item"
-      role="button"
-      aria-label={title}
-      on:click={() => onClick(route)}
-      {title}
-    >
-      {icon}
-    </div>
-  {/each}
+  <div class="item">
+    <span class="material-icons-outlined">home</span>
+  </div>
+  <div class="item">
+    <span class="material-icons-outlined">settings</span>
+  </div>
 </div>
 
 <style>
@@ -39,15 +21,33 @@
     height: 100%;
     color: var(--color-text);
     border-right: 2px solid var(--color-border);
+    box-sizing: border-box;
   }
+
   .item {
-    font-size: 1.5rem;
-    margin: var(--spacing-md) 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: var(--spacing-sm) 0;
     cursor: pointer;
     color: var(--color-text);
-    transition: color 0.2s;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+    border-radius: 0;
   }
+
+  .item + .item {
+    margin-top: var(--spacing-md);
+  }
+
   .item:hover {
-    color: var(--color-primary);
+    background-color: var(--color-hover);
+    color: var(--color-bg);
+  }
+
+  .item .material-icons-outlined {
+    font-size: 1.8rem;
   }
 </style>
