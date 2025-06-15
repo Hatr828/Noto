@@ -27,9 +27,9 @@
 
       if (node.expanded === false) {
         selectedNode = null;
+      } else {
+        selectedNode = node;
       }
-
-      selectedNode = node;
     }
   }
 

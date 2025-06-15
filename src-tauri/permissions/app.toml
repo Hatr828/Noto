@@ -4,4 +4,4 @@
 [[permission]]
 identifier = "scan-folder"
 description = "allow commands for FileExplorer"
-commands.allow = ["scan_folder", "add_folder", "add_md_file", "delete_node"]
+commands.allow = ["scan_folder", "add_folder", "add_md_file", "delete_node", "read_markdown", "save_markdown"]

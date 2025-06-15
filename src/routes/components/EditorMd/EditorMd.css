@@ -1,13 +1,13 @@
 .editor-container {
-  height: 100%;
   flex: 1;
+  height: 100%;
+  width: 100%;
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);
   border: 1px solid var(--color-resizer);
   border-radius: 4px;
-  overflow: hidden;
   border-right: none;
 }
 
@@ -21,35 +21,100 @@
   border-right: 1px solid var(--color-resizer);
 }
 
-.editor-container .cm-activeLine {
-  background: rgba(255, 255, 255, 0.05);
+.editor-container .cm-editor {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
 }
 
-.editor-container .cm-cursor {
-  border-left: 1px solid var(--color-primary) !important;
+.editor-container .cm-scroller {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+.editor-container .cm-activeLine,
+.editor-container .cm-activeLineGutter {
+  background-color: transparent !important;
 }
 
 .editor-container .cm-selectionBackground,
-.editor-container .cm-selectionMatch {
-  background: rgba(100, 108, 255, 0.3);
+.editor-container .cm-selectionMatch,
+.editor-container .cm-searchMatch {
+  background-color: rgba(100, 108, 255, 0.3) !important;
 }
 
-.editor-container .cm-foldPlaceholder {
-  background: var(--color-explorer-bg);
-  color: var(--color-primary);
-  border: 1px dashed var(--color-primary);
-  border-radius: 2px;
+.editor-container ::selection {
+  background-color: rgba(100, 108, 255, 0.3) !important;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
-.editor-container .cm-line:hover {
-  background: transparent;
+.editor-container .cm-line {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: var(--line-height, 1.5) !important;
 }
 
-.editor-container .cm-scroller,
-.editor-container .cm-content {
-  background: var(--color-bg) !important;
+.editor-container .cm-line * {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-.editor-container .cm-layer {
-  background: var(--color-bg) !important;
+.editor-container .cm-scroller {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+.editor-container .cm-scroller::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* fence md */
+.cm-fencedFrame-line {
+  display: block;
+  /* строка как блочный элемент */
+  width: 100%;
+  /* на всю ширину редактора */
+  box-sizing: border-box;
+  /* чтобы padding не ломал ширину */
+  padding: 0px 10px;
+  /* отступы под рамку */
+  position: relative;
+  background: rgba(4, 1, 19, 0.1);
+
+  /* Обрезаем всё, что выходит за рамки (включая выделение) */
+  overflow: hidden;
+  clip-path: inset(0 10px 0 10px);
+}
+
+.cm-fencedFrame-line::before,
+.cm-fencedFrame-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0px;
+  background: #888;
+  /* цвет рамки */
+}
+
+.cm-fencedFrame-line::before {
+  left: 10px;
+}
+
+.cm-fencedFrame-line::after {
+  right: 10px;
+}
+
+/* Сброс отступов между строками, чтобы бордер выглядел непрерывным */
+.cm-fencedFrame-line+.cm-fencedFrame-line {
+  margin-top: -2px;
+}
+
+.cm-fencedFrame-line::selection {
+  background: rgba(100, 100, 100, 0.3);
+}
+
+/* ende */

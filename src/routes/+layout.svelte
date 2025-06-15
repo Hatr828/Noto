@@ -6,7 +6,7 @@
   import "@fontsource/material-symbols-outlined";
   import EditorMd from "./components/EditorMd/EditorMd.svelte";
   import MenuBar from "./components/MenuBar/MenuBar.svelte";
-    import ModalInfo from "../lib/Modals/Modal_Info/Modal_Info.svelte";
+  import ModalInfo from "../lib/Modals/Modal_Info/Modal_Info.svelte";
 </script>
 
 <main class="layout">
@@ -18,7 +18,10 @@
     <ModalInfo />
     <SidebarIcons />
     <FileExplorer />
-    <EditorMd />
+    <EditorMd
+      filePath="C:\Users\hatr6\Desktop\Test\New File (55).md"
+      saveInterval={10}
+    />
   </div>
   <div class="content">
     <slot />

@@ -92,6 +92,16 @@ fn is_markdown(path: &Path) -> bool {
 }
 
 #[tauri::command]
+pub fn read_markdown(path: String) -> Result<String, String> {
+    fs::read_to_string(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn save_markdown(path: String, contents: String) -> Result<(), String> {
+    fs::write(&path, contents).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn scan_folder(path: String, window: Window) {
     let _ = window.emit("scan-change-path", &path);
 

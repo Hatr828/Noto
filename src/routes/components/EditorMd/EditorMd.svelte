@@ -1,54 +1,44 @@
 <script lang="ts">
-  import { onMount, onDestroy, createEventDispatcher } from "svelte";
-  import { EditorState } from "@codemirror/state";
+  import { onMount, onDestroy } from "svelte";
   import type { Extension } from "@codemirror/state";
-  import { EditorView, keymap } from "@codemirror/view";
-  import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-  import { markdown } from "@codemirror/lang-markdown";
-  import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
-  import { oneDark } from "@codemirror/theme-one-dark";
+  import { initializeEditor, type EditorModuleOptions } from "./EditorMd";
+  import "./EditorMd.css"
 
-  import "./EditorMd.css";
-
-  export let content: string = "";
+  /**
+   * Additional CodeMirror extensions
+   */
   export let extensions: Extension[] = [];
+  /**
+   * Auto-save interval in seconds (0 to disable)
+   */
+  export let saveInterval: number = 0;
+  /**
+   * Absolute filesystem path for Tauri commands
+   */
+  export let filePath: string;
 
-  const baseExtensions: Extension[] = [
-    EditorView.lineWrapping,
-    history(),
-    highlightSelectionMatches(),
-    keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
-    oneDark,
-    markdown(),
-  ];
-
-  let view: EditorView;
   let container: HTMLDivElement;
-  const dispatch = createEventDispatcher();
+  let editorModule: ReturnType<typeof initializeEditor>;
 
   onMount(() => {
-    view = new EditorView({
-      parent: container,
-      state: EditorState.create({
-        doc: content,
-        extensions: [...baseExtensions, ...extensions],
-      }),
-    });
-
-    const oldDispatch = view.dispatch;
-    view.dispatch = (tr) => {
-      oldDispatch.call(view, tr);
-      if (tr.docChanged) {
-        dispatch("update", { text: view.state.doc.toString() });
-      }
-    };
+    const opts: EditorModuleOptions = { extensions, saveInterval, filePath };
+    editorModule = initializeEditor(container, opts);
   });
 
-  onDestroy(() => view.destroy());
+  onDestroy(() => {
+    editorModule.destroy();
+  });
 
-  /** Доступ к текущему тексту извне */
+  // React to filePath change
+  $: if (editorModule) {
+    editorModule.reload();
+  }
+
+  /**
+   * Expose API to get text
+   */
   export function getText(): string {
-    return view.state.doc.toString();
+    return editorModule.getText();
   }
 </script>
 
