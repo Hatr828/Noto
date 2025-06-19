@@ -4,9 +4,10 @@
   import SidebarIcons from "./components/SidebarIcons.svelte";
   import "@material-design-icons/font";
   import "@fontsource/material-symbols-outlined";
-  import EditorMd from "./components/EditorMd/EditorMd.svelte";
+  import EditorMd from "./components/Editor/EditorMd/EditorMd.svelte";
   import MenuBar from "./components/MenuBar/MenuBar.svelte";
   import ModalInfo from "../lib/Modals/Modal_Info/Modal_Info.svelte";
+  import Editor from "./components/Editor/Editor.svelte";
 </script>
 
 <main class="layout">
@@ -18,12 +19,11 @@
     <ModalInfo />
     <SidebarIcons />
     <FileExplorer />
-    <EditorMd
+    <Editor />
+    <!-- <EditorMd
       filePath="C:\Users\hatr6\Desktop\Test\New File (55).md"
       saveInterval={10}
-    />
-  </div>
-  <div class="content">
+    /> -->
     <slot />
   </div>
 </main>
@@ -38,7 +38,9 @@
   }
   .main-body {
     display: flex;
-    height: 100vh;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
   .titlebar {
     -webkit-app-region: drag;

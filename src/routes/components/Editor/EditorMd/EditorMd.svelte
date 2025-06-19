@@ -34,9 +34,6 @@
     editorModule.reload();
   }
 
-  /**
-   * Expose API to get text
-   */
   export function getText(): string {
     return editorModule.getText();
   }
